@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer components {
+  .nav-link {
+    @apply relative font-bold px-3 py-2 text-white hover:text-orange-500 transition-colors;
+  }
+  
+  .nav-link::after {
+    @apply /* content-[''] */ absolute bottom-0 left-0 w-0 h-0.5 bg-orange-300 transition-all duration-300;
+  }
+  
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .dropdown-animation {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .chevron-animation {
+    @apply transition-transform duration-300;
+  }
+
+  .hero-title {
+    @apply text-4xl md:text-5xl font-bold text-white mb-6;
+  }
+
+  .hero-subtitle {
+    @apply text-lg text-white;
+  }
+
+  .hero-button {
+    @apply w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold transition-colors;
+  }
+
+  .hover-card {
+    @apply w-full p-6 bg-white shadow-md rounded-xl hover:shadow-lg transition-shadow duration-300 flex flex-col items-center;
+  }
+}
+
+.dropdown-higlight {
+  @apply hover:text-orange-600 transition-all duration-200;
+}
+
+.joom {
+  @apply transition-all duration-300 transform hover:scale-105 cursor-default;
+}

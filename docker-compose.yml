@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  elegalsamadhan-app:
+    image: stevensteel7/elegalsamadhan:vps-build
+    container_name: elegalsamadhan-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - RESEND_API_KEY=re_HojJeuWz_NvZKwCUQviuDkJuV4sQ4kBdc
+      - EMAIL_SENDER=onboarding@resend.dev
+      - CONTACT_FORM_RECIPIENT=elegalsamadhan@outlook.com
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - judgements_prisma_db:/app/prisma
+
+volumes:
+  judgements_prisma_db:

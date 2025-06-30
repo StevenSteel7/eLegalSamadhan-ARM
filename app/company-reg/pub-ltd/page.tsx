@@ -1,0 +1,433 @@
+'use client';
+import React, { useState } from 'react';
+import { Star, Building2, FileBarChart, FileCheck, RefreshCw, BookOpen, Leaf, Handshake } from 'lucide-react';
+import CallbackForm from '@/app/components/callBackForm';
+
+const App = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+  };
+
+  return (
+    
+  <div className=" bg-gradient-to-br from-blue-50 to-blue-100 ">
+    
+    
+    <div className="relative bg-gradient-to-br from-blue-50 to-blue-100  overflow-hidden">
+      {/* Background Image */}
+      <div
+        // 2. Changed height from vh units to `h-full`
+        className="absolute top-0 left-0 w-full h-full z-0 opacity-20 pointer-events-none cursor-default"
+        style={{
+          backgroundImage: 'url("/images/company.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          // 3. Added no-repeat
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      <div className="container mx-auto px-4 py-12 relative z-10 cursor-default">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          {/* Left Column - Content */}
+          <div className="space-y-6">
+            <div className="flex items-center text-sm text-blue-800 font-semibold">
+              <Building2 className="w-4 h-4 mr-2" />
+              BEGIN WITH LEGAL REGISTRATION OF YOUR COMPANY
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-bold text-indigo-900 leading-tight">
+              Pub. Ltd. Company Registration {/* Added Registration for clarity */}
+            </h1>
+
+            <p className="text-lg text-gray-700">
+              Every Start-Up deserves seamless, trusted & hassle-free Legal Services along with StartUp
+              mentorship, in a very cost-effective manner.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-800">
+              Get your Company registered!
+            </h2>
+
+            <ul className="space-y-3">
+              {[
+                'Lowest Price Guarantee',
+                'Quick and Hassle-Free Process',
+                'Get Registration Certificate', // 6. Fixed typo
+                'No Hidden Fee',
+                'Expert Assistance for Lifetime'
+              ].map((item, index) => (
+                <li key={index} className="flex items-center text-gray-700">
+                  {/* 4. Added flex-shrink-0 */}
+                  <span className="w-2 h-2 bg-black rounded-full mr-3 flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Right Column - Form */}
+          <CallbackForm
+            title="Need Help with Pub. Ltd. Registration"
+            formSource="Pub. Ltd. Registration"
+            buttonText="Request Callback  "/>
+        </div>
+      </div>
+    </div>
+
+
+
+    
+
+  <div id="Docs Req" className="bg-gradient-to-b from-gray-50 to-gray-100 pt-14 cursor-default ">
+    <div className="max-w-7xl mx-auto px-4  ">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-3 mb-3 group">
+          <h2 className="text-4xl font-bold text-gray-800 transition-all duration-300">Documents</h2>
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600 transition-all duration-300 group-hover:tracking-wider">Required?</h2>
+        </div>
+        <div className="w-24 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 mx-auto mt-4 rounded-full  group-hover:w-32 transition-all duration-500"></div>
+        <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Everything you need to successfully incorporate your company</p>
+      </div>
+      
+      <div className="grid md:grid-cols-3 gap-8 mt-8">
+        {/* For the Director & Nominee */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mr-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-2xs text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800">For the Director & Nominee</h3>
+          </div>
+          <div className="space-y-4 text-gray-700">
+            <p className="flex items-center hover:text-emerald-600 transition-colors duration-200">
+              <span className="mr-2">🆔</span> PAN Card
+            </p>
+            <p className="flex items-center hover:text-emerald-600 transition-colors duration-200">
+              <span className="mr-2">🆔</span> Aadhaar Card
+            </p>
+            <p className="flex items-center hover:text-emerald-600 transition-colors duration-200">
+              <span className="mr-2">🪪</span> Passport/Driver's License/Voter ID
+            </p>
+            <p className="flex items-center hover:text-emerald-600 transition-colors duration-200">
+              <span className="mr-2">🏠</span> Bank Statement/Utility Bill/Rent Agreement
+            </p>
+            <p className="flex items-center hover:text-emerald-600 transition-colors duration-200">
+              <span className="mr-2">🖼️</span> Passport-size photographs
+            </p>
+          
+          </div>
+        </div>
+        
+        {/* For the Registered Office */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mr-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800">For the Registered Office</h3>
+          </div>
+          <div className="space-y-4 text-gray-700">
+            <p className="flex items-center hover:text-teal-600 transition-colors duration-200">
+              <span className="mr-2">📃</span> Rent Agreement (if rented)
+            </p>
+            <p className="flex items-center hover:text-teal-600 transition-colors duration-200">
+              <span className="mr-2">📄</span> No Objection Certificate (NOC)
+            </p>
+            <p className="flex items-center hover:text-teal-600 transition-colors duration-200">
+              <span className="mr-2">💡</span> Utility Bill (not older than 2 months)
+            </p>
+          </div>
+        </div>
+        
+        {/* Company Incorporation Documents */}
+        <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mr-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-12 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800">Company Incorporation Documents</h3>
+          </div>
+          <div className="space-y-4 text-gray-700">
+            <p className="flex items-center hover:text-cyan-600 transition-colors duration-200">
+              <span className="mr-2">📘</span> Memorandum of Association (MoA)
+            </p>
+            <p className="flex items-center hover:text-cyan-600 transition-colors duration-200">
+              <span className="mr-2">📗</span> Articles of Association (AoA)
+            </p>
+            <p className="flex items-center hover:text-cyan-600 transition-colors duration-200">
+              <span className="mr-2">🤵</span> Declaration by the directors (INC-9)
+            </p>
+            <p className="flex items-center hover:text-cyan-600 transition-colors duration-200">
+              <span className="mr-2">🔢</span>Board Resolution for Incorporation
+            </p>
+            <p className="flex items-center hover:text-cyan-600 transition-colors duration-200">
+              <span className="mr-2">🧾</span> - Application for name approval (RUN Form)
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div className="bg-gray-100  py-20">
+    <div className="max-w-7xl mx-auto px-8">
+      <div className="grid md:grid-cols-2 gap-16">
+
+      {/* Compliances Component */}
+            <div className="group bg-white p-12 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 w-full cursor-default">
+            <div className="flex items-center mb-6">
+                <div className="md:w-16 md:h-16  bg-teal-100 rounded-full flex items-center justify-center mr-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800">Compliances Required After Registration</h3>
+            </div>
+            <div className="w-28 h-1 bg-gradient-to-r from-teal-400 to-cyan-500 mb-6 rounded-full transition-all duration-300 md:group-hover:w-md"></div>
+            
+            {/* Grid for Box Items */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 cursor-default">
+                {[
+                {
+                    title: "Appointment of Auditor and Individual Director",
+                    desc: "Within 30 days of incorporation."
+                },
+                {
+                    title: "First Board Meeting",
+                    desc: "Conduct the first board meeting within 30 days."
+                },
+                {
+                    title: "Share Certificates",
+                    desc: "Issue share certificates to shareholders within 60 days."
+                },
+                {
+                    title: "Annual Returns & Financials",
+                    desc: "File MGT-7 and AOC-4 annually with the Registrar of Companies."
+                },
+                {
+                    title: "Books & Records",
+                    desc: "Maintain accurate books of accounts and statutory registers."
+                },
+                {
+                    title: "Board & General Meetings",
+                    desc: "Hold board meetings and AGMs regularly as per the Companies Act."
+                },
+                {
+                    title: "Income Tax Return",
+                    desc: "File ITR-6 annually, even if there is no income."
+                },
+                {
+                    title: "GST Compliance",
+                    desc: "Comply with GST regulations if registered under GST."
+                },
+                {
+                    title: "Director KYC",
+                    desc: "Update DIR-3 KYC for all directors annually."
+                },
+                {
+                    title: "Change in Office Address",
+                    desc: "File Form INC-22 in case of any change in the registered office."
+                }
+                ,{
+                    title: "Compliance with SEBI ",
+                    desc: "SEBI (Securities and Exchange Board of India) regulations for listed companies."
+                },
+                {
+                    title: " Listing Agreement",
+                    desc: "Quarterly and annual financial disclosures if listed on stock exchanges."
+                }
+                ,
+                {
+                    title: "Mandatory Secretarial Audit",
+                    desc: "For companies with a large capital base."
+                }
+                ,
+                { 
+                    title: "Public Shareholding Rules",
+                    desc: "Must maintain at least 25% public shareholding."
+                }
+                ].map((item, index) => (
+                <div key={index} className="bg-white border border-gray-100 rounded-xl p-6 hover:border-teal-200 hover:bg-teal-50 transition-all duration-300 shadow-sm transform hover:scale-105">
+                    <h4 className="text-teal-700 font-medium">{item.title}</h4>
+                    <p className="text-gray-600 mt-1">{item.desc}</p>
+                </div>
+                ))}
+            </div>
+        </div>
+
+
+        {/* Benefits of an OPC Component */}
+        <div className="group bg-white p-12 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 w-full cursor-default">
+          <div className="flex items-center mb-6">
+            <div className="md:w-16 md:h-16  bg-teal-100 rounded-full flex items-center justify-center mr-5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800">Benefits of an OPC</h3>
+          </div>
+          <div className="w-28 h-1 bg-gradient-to-r from-teal-400 to-cyan-500 mb-6 rounded-full transition-all duration-300 md:group-hover:w-md"></div>
+          <div className="grid grid-cols-1 gap-6 ">
+            {[
+              {
+                title: "Limited Liability",
+                desc: "The owner’s liability is limited to the company’s investment, protecting personal assets."
+              },
+              {
+                title: "Separate Legal Entity",
+                desc: "The OPC has its own legal identity, separate from its owner."
+              },
+              {
+                title: "Perpetual Succession",
+                desc: "The company continues operations even if the owner becomes incapacitated, with the nominee taking over."
+              },
+              {
+                title: "Easy Compliance",
+                desc: "Lesser compliance requirements than private limited companies (e.g., no need for an annual general meeting)."
+              },
+              {
+                title: "Better Credibility",
+                desc: "Recognized as a separate entity, OPCs are more credible for loans and business deals."
+              },
+              {
+                title: "Tax Benefits",
+                desc: "Eligible for deductions and lower tax rates compared to sole proprietorships."
+              },
+              {
+                title: "No Minimum Capital",
+                desc: "There is no mandatory minimum capital requirement for setting up an OPC."
+              }
+            ].map((item, index) => (
+              <div key={index} className="bg-white border border-gray-100 rounded-xl p-6 hover:border-teal-200 hover:bg-teal-50 transition-all duration-300 shadow-sm transform hover:scale-105">
+              <h4 className="text-teal-700 font-medium">{item.title}</h4>
+                <p className="text-gray-600 mt-1">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div className='bg-gray-100 flex justify-center items-center pb-20'>
+    {/* Key Differences Component */}
+  <div className="container  flex justify-center z-10 cursor-default ">
+    <div className="bg-white p-8 md:p-12 rounded-2xl max-w-7xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 w-full transform hover:-translate-y-1">
+      <div className="flex items-center mb-8">
+        <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mr-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 014-4h5M9 17H5a2 2 0 01-2-2v-1a2 2 0 012-2h1m3 5v2a2 2 0 002 2h5a2 2 0 002-2v-2m-6 0h6" />
+          </svg>
+        </div>
+        <h3 className="text-2xl font-semibold text-gray-800">Key Differences: Private vs Public Limited Company</h3>
+      </div>
+      
+      <div className="w-32 h-1 bg-gradient-to-r from-teal-400 to-emerald-500 mb-8 rounded-full"></div>
+      
+      <div className="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr>
+              <th className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-4 text-left rounded-tl-lg font-medium">Feature</th>
+              <th className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-4 text-left font-medium">
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                  Private Limited Company
+                </span>
+              </th>
+              <th className="bg-gradient-to-r from-teal-700 to-teal-800 text-white px-6 py-4 text-left rounded-tr-lg font-medium">
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                  </svg>
+                  Public Limited Company
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {[
+              {
+                feature: "Ownership",
+                private: "Minimum 2 and Maximum 200 shareholders",
+                public: "Minimum 7 shareholders, no maximum limit"
+              },
+              {
+                feature: "Stock Exchange Listing",
+                private: "Cannot issue shares to the public",
+                public: "Can list shares on the stock exchange"
+              },
+              {
+                feature: "Minimum Directors",
+                private: "At least 2 directors",
+                public: "At least 3 directors"
+              },
+              {
+                feature: "Minimum Capital",
+                private: "No minimum capital requirement",
+                public: "₹5 lakh minimum paid-up capital"
+              },
+              {
+                feature: "Share Transferability",
+                private: "Restricted transfer of shares",
+                public: "Shares are freely transferable"
+              },
+              {
+                feature: "Regulatory Compliance",
+                private: "Lesser compliance burden",
+                public: "High compliance with SEBI & ROC regulations"
+              },
+              {
+                feature: "AGM Requirement",
+                private: "Not mandatory if a small company",
+                public: "Mandatory every year"
+              },
+              {
+                feature: "Public Disclosure",
+                private: "Limited financial disclosure",
+                public: "Extensive financial and operational disclosure"
+              }
+            ].map((row, idx) => (
+              <tr key={idx} className="hover:bg-teal-50 transition-colors duration-200">
+                <td className="px-6 py-4 font-bold md:text-lg text-teal-800 bg-teal-50">{row.feature}</td>
+                <td className="px-6 py-4 text-gray-700 md:text-lg">{row.private}</td>
+                <td className="px-6 py-4 text-gray-700 md:text-lg ">{row.public}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      <div className="mt-6 text-right">
+        <span className="text-sm text-gray-500 italic">Source: Ministry of Corporate Affairs guidelines</span>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  
+
+
+    </div>
+  );
+};
+
+export default App;
