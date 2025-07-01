@@ -1,25 +1,25 @@
 // app/api/judgements/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { JudgementCategory } from '@prisma/client';
 
-// GET /api/judgements/:id
+// --- ADDED --- A helper function to validate the category enum
+function isJudgementCategory(value: string): value is JudgementCategory {
+  return Object.values(JudgementCategory).includes(value as JudgementCategory);
+}
+
+// GET /api/judgements/:id (No changes needed)
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  const parsedId = parseInt(id, 10);
-
+  const parsedId = parseInt(params.id, 10);
   if (isNaN(parsedId)) {
     return NextResponse.json({ error: 'Invalid Judgement ID' }, { status: 400 });
   }
 
   try {
-    const judgement = await prisma.judgement.findUnique({
-      where: { id: parsedId },
-    });
-
+    const judgement = await prisma.judgement.findUnique({ where: { id: parsedId } });
     if (!judgement) {
       return NextResponse.json({ error: 'Judgement not found' }, { status: 404 });
     }
-
     return NextResponse.json(judgement);
   } catch (error) {
     console.error('Error fetching judgement:', error);
@@ -27,31 +27,37 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// PUT /api/judgements/:id
+// PUT /api/judgements/:id - Update an existing judgement
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  const parsedId = parseInt(id, 10);
-
+  const parsedId = parseInt(params.id, 10);
   if (isNaN(parsedId)) {
     return NextResponse.json({ error: 'Invalid Judgement ID' }, { status: 400 });
   }
 
   try {
-    const body = await request.json(); // Correctly using request.json()
+    const body = await request.json();
 
-    if (!body.title || !body.caseNumber || !body.court || !body.date || !body.fullContent) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // --- MODIFIED --- Destructure and validate the 'category' field
+    const { title, caseNumber, court, date, fullContent, summary, category } = body;
+    if (!title || !caseNumber || !court || !date || !fullContent || !category) {
+      return NextResponse.json({ error: 'Missing required fields, including category' }, { status: 400 });
+    }
+
+    // --- ADDED --- Validate the category value
+    if (!isJudgementCategory(category)) {
+      return NextResponse.json({ error: 'Invalid category provided' }, { status: 400 });
     }
 
     const updatedJudgement = await prisma.judgement.update({
       where: { id: parsedId },
       data: {
-        title: body.title,
-        caseNumber: body.caseNumber,
-        court: body.court,
-        date: body.date,
-        summary: body.summary,
-        fullContent: body.fullContent,
+        title,
+        caseNumber,
+        court,
+        date: new Date(date), // Ensure date is stored as a DateTime object
+        summary: summary || null,
+        fullContent,
+        category, // --- ADDED --- Update the category in the database
       },
     });
 
@@ -65,20 +71,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// DELETE /api/judgements/:id
+// DELETE /api/judgements/:id (No changes needed)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  const parsedId = parseInt(id, 10);
-
+  const parsedId = parseInt(params.id, 10);
   if (isNaN(parsedId)) {
     return NextResponse.json({ error: 'Invalid Judgement ID' }, { status: 400 });
   }
 
   try {
-    await prisma.judgement.delete({
-      where: { id: parsedId },
-    });
-
+    await prisma.judgement.delete({ where: { id: parsedId } });
     return NextResponse.json({ message: 'Judgement deleted successfully' });
   } catch (error) {
     console.error(`Error deleting judgement ${parsedId}:`, error);

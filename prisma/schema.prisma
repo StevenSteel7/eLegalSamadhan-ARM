@@ -24,14 +24,12 @@ model Judgement {
   title       String
   caseNumber  String
   court       String
-  date        String
+  date        DateTime // <--- CHANGE THIS LINE from String to DateTime
   summary     String?
   fullContent String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  // 2. ADDED THE CATEGORY FIELD
-  // Every Judgement record will now have a mandatory category.
   category    JudgementCategory
 }
 

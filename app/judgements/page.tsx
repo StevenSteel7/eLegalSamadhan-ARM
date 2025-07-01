@@ -1,216 +1,238 @@
-// app/judgements/page.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react'; // useCallBack is not strictly needed here
-import { Search, BookOpen, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search, BookOpen, ArrowRight, Scale, FolderSearch, FileText, Building, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { Pagination } from '@/app/components/Pagination'; // Assuming the component is at this path
 
-// Define the type based on your Prisma schema (or a subset)
+// Interface for the judgement data
 interface Judgement {
   id: number;
   title: string;
   caseNumber: string;
   court: string;
   date: string;
-  summary?: string | null; // Summary is optional
-  fullContent: string; // Keep fullContent for client-side search if needed, but better to search on backend
-  createdAt: string; // 👈 Add this (ISO date string)
-
+  summary?: string | null;
+  category: string;
+  createdAt: string;
 }
 
 const ITEMS_PER_PAGE = 9;
 
-const JudgementsPage = () => {
-  const [allJudgements, setAllJudgements] = useState<Judgement[]>([]); // Store all fetched data
+// Helper to format the category ENUM for display
+const formatCategoryTitle = (category: string | null) => {
+  if (!category) return "All Judgements";
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper for styling category badges on cards
+const getCategoryStyle = (category: string) => {
+    const styles: { [key: string]: string } = {
+        ARBITRATION_MATTER: 'bg-blue-100 text-blue-800',
+        CONSUMER_DISPUTES: 'bg-emerald-100 text-emerald-800',
+        REAL_ESTATE_DISPUTES: 'bg-amber-100 text-amber-800',
+        CYBER_DISPUTES: 'bg-indigo-100 text-indigo-800',
+        OTHER_MATTER: 'bg-slate-100 text-slate-800',
+    };
+    return styles[category] || styles['OTHER_MATTER'];
+};
+
+// The core logic component
+const JudgementsPageContent = () => {
+  const searchParams = useSearchParams();
+  const category = searchParams.get('category');
+
+  const [allJudgements, setAllJudgements] = useState<Judgement[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data from the API
- useEffect(() => {
-  const fetchJudgements = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/judgements');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  useEffect(() => {
+    const fetchJudgements = async () => {
+      setIsLoading(true);
+      setError(null);
+      const url = category ? `/api/judgements?category=${category}` : '/api/judgements';
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data: Judgement[] = await response.json();
+        setAllJudgements(data);
+      } catch (e: any) {
+        setError(`Failed to load judgements. Please try again later.`);
+      } finally {
+        setIsLoading(false);
       }
-      const data: Judgement[] = await response.json();
+    };
+    fetchJudgements();
+  }, [category]);
 
-      // 👇 Sort the judgements by createdAt (Newest first)
-      const sortedData = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      setAllJudgements(sortedData);
-    } catch (e: any) {
-      console.error("Failed to fetch judgements:", e);
-      setError(`Failed to load judgements. ${e.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  fetchJudgements();
-}, []);
-
-  // Filter judgements based on search query (client-side)
   const filteredJudgements = useMemo(() => {
-    if (!searchQuery) {
-      return allJudgements;
-    }
+    if (!searchQuery) return allJudgements;
     const lowerCaseQuery = searchQuery.toLowerCase();
-    return allJudgements.filter(judgement =>
-      judgement.title.toLowerCase().includes(lowerCaseQuery) ||
-      judgement.caseNumber.toLowerCase().includes(lowerCaseQuery) ||
-      judgement.court.toLowerCase().includes(lowerCaseQuery) ||
-      // You might want to remove fullContent from client-side search for performance
-      // judgement.fullContent.toLowerCase().includes(lowerCaseQuery) ||
-      (judgement.summary?.toLowerCase().includes(lowerCaseQuery)) // Search summary
+    return allJudgements.filter(j =>
+      j.title.toLowerCase().includes(lowerCaseQuery) ||
+      j.caseNumber.toLowerCase().includes(lowerCaseQuery) ||
+      j.court.toLowerCase().includes(lowerCaseQuery) ||
+      (j.summary?.toLowerCase().includes(lowerCaseQuery))
     );
-  }, [allJudgements, searchQuery]); // Depend on allJudgements and searchQuery
+  }, [allJudgements, searchQuery]);
 
-  // Calculate total pages based on filtered results
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredJudgements.length / ITEMS_PER_PAGE);
-  }, [filteredJudgements]);
+  const totalPages = useMemo(() => Math.ceil(filteredJudgements.length / ITEMS_PER_PAGE), [filteredJudgements]);
 
-  // Get judgements for the current page
   const paginatedJudgements = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredJudgements.slice(startIndex, endIndex);
+    return filteredJudgements.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredJudgements, currentPage]);
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // Scroll to the top of the list
-      const listContainer = document.getElementById('judgements-list');
-      if (listContainer) {
-           listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      document.getElementById('judgements-list')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Reset page to 1 when search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, category]);
 
+  const pageTitle = formatCategoryTitle(category);
 
   return (
-    <div className="relative bg-gray-50 py-16 md:py-20 min-h-screen">
+    <div className="relative bg-slate-50 py-12 md:py-24 min-h-screen">
       {/* Section Header */}
-      <div className="container mx-auto px-4 text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-4">
-          Legal <span className="text-orange-500">Judgements</span> Database
+      <div className="container mx-auto px-4 text-center mb-12 md:mb-16">
+        <div className="flex justify-center items-center gap-4 mb-4">
+            <Scale className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
+        </div>
+        <p className="text-lg font-semibold text-blue-600 mb-2">Legal Judgements Database</p>
+        <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 tracking-tight">
+          {pageTitle}
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Explore a comprehensive collection of important legal judgements from various courts.
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto mt-6">
+          Explore our database of legal cases. Use the search below to filter results within this category.
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="container mx-auto px-4 mb-10">
+      <div className="container mx-auto px-4 mb-12 max-w-2xl">
         <div className="relative">
+          <label htmlFor="search-judgements" className="sr-only">Search judgements</label>
           <input
+            id="search-judgements"
             type="text"
-            placeholder="Search by case number, title, court, or summary..."
+            placeholder="Search by case number, title, court, or keywords..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-gray-800"
+            className="w-full text-lg px-6 py-4 pl-14 bg-white border-2 border-transparent rounded-full focus:outline-none focus:ring-4 focus:ring-blue-300 focus:border-blue-500 shadow-lg text-slate-800 transition"
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400" size={24} />
         </div>
       </div>
 
-      {/* Judgements List Container */}
-      {error ? (
-           <div className="container mx-auto px-4 text-center py-20">
-             <p className="text-red-600 text-xl">{error}</p>
-           </div>
-      ) : isLoading ? (
-         <div className="container mx-auto px-4 text-center py-20">
-            <p className="text-gray-600 text-xl flex items-center justify-center">
-                 <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+      {/* Content Area */}
+      {error && <div className="text-center text-red-600 py-20 text-xl">{error}</div>}
+
+      {isLoading && (
+        <div className="flex justify-center items-center py-20">
+            <div className="text-slate-600 text-xl flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 Loading Judgements...
-            </p>
-         </div>
-      ) : (
-          <>
+            </div>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <>
             {filteredJudgements.length === 0 ? (
-                 <div className="container mx-auto px-4 text-center py-20">
-                     <p className="text-gray-600 text-xl">No judgements found matching your search query.</p>
-                 </div>
+                <div className="container mx-auto px-4 text-center py-20">
+                    <FolderSearch className="mx-auto h-24 w-24 text-slate-400" strokeWidth={1} />
+                    <h2 className="mt-6 text-2xl font-semibold text-slate-700">No Judgements Found</h2>
+                    <p className="mt-2 text-slate-500">There are no judgements matching your search in this category.</p>
+                </div>
             ) : (
                 <>
                    {/* Judgements List Grid */}
-                   <div id="judgements-list" className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 pb-8">
+                   <div id="judgements-list" className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
                       {paginatedJudgements.map((judgement) => (
-                        // Use Link to wrap the card content
                         <Link
                             key={judgement.id}
-                            href={`/judgements/${judgement.id}`} // Dynamic link to the detail page
-                            className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-700 hover:shadow-lg transition-shadow duration-300 flex flex-col group cursor-pointer joom no-underline" // Add group for hover, remove underline
+                            href={`/judgements/${judgement.id}`}
+                            className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col group no-underline border border-slate-200 hover:-translate-y-1"
                         >
-                           <div className="flex items-center mb-3">
-                                <BookOpen className="h-8 w-8 text-orange-500 mr-3 flex-shrink-0" />
-                                <h3 className="text-xl font-semibold text-blue-900 leading-tight group-hover:text-blue-700">{judgement.title}</h3> {/* Add hover effect */}
+                           <div className="p-6 flex flex-col h-full">
+                                <div className="flex justify-between items-start mb-4">
+                                    <BookOpen className="h-10 w-10 text-orange-500 flex-shrink-0" strokeWidth={1.5} />
+                                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${getCategoryStyle(judgement.category)}`}>
+                                        {formatCategoryTitle(judgement.category)}
+                                    </span>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 leading-snug mb-3 group-hover:text-blue-700">
+                                    {judgement.title}
+                                </h3>
+                                <div className="space-y-2 text-sm text-slate-600 border-t border-slate-100 pt-3 my-3">
+                                    <p className="flex items-center gap-2"><FileText size={14} /> <strong>Case:</strong> {judgement.caseNumber}</p>
+                                    <p className="flex items-center gap-2"><Building size={14} /> <strong>Court:</strong> {judgement.court}</p>
+                                    <p className="flex items-center gap-2"><Calendar size={14} /> <strong>Date:</strong> {new Date(judgement.date).toLocaleDateString()}</p>
+                                </div>
+                               <p className="text-slate-600 text-sm mb-4 flex-grow line-clamp-4">
+                                    {judgement.summary}
+                               </p>
+                               <div className="mt-auto border-t border-slate-100 pt-4">
+                                   <span className="inline-flex items-center text-blue-600 font-semibold group-hover:text-blue-800 transition-colors">
+                                        Read Full Judgement <ArrowRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1" />
+                                   </span>
+                               </div>
                            </div>
-                           <p className="text-gray-700 text-sm mb-2 flex-shrink-0">
-                               <span className="font-medium">Case No:</span> {judgement.caseNumber}
-                           </p>
-                           <p className="text-gray-700 text-sm mb-4 flex-shrink-0">
-                               <span className="font-medium">Court:</span> {judgement.court} <br/>
-                               <span className="font-medium">Date of Judgement:</span> {judgement.date}
-                           </p>
-                           {/* Display summary */}
-                           <p className="text-gray-600 mb-4 flex-grow">
-                                {judgement.summary}
-                           </p>
-                           <span className="inline-flex items-center text-emerald-600 font-medium group-hover:text-emerald-700 transition-colors mt-auto">
-                                Read Full Judgement <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                           </span>
                         </Link>
                       ))}
                     </div>
 
-                    {/* Pagination Controls */}
+                    {/* --- NEW, BEAUTIFUL PAGINATION --- */}
                     {totalPages > 1 && (
-                      <div className="container mx-auto px-4 mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <button
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="px-4 py-2 bg-blue-900 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-800 transition-colors flex items-center"
-                          aria-label="Go to previous page"
-                        >
-                          <ChevronLeft size={18} className="mr-1" /> Previous
-                        </button>
-                        <span className="text-gray-700 font-medium">
-                          Page {currentPage} of {totalPages}
-                        </span>
-                        <button
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="px-4 py-2 bg-blue-900 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-800 transition-colors flex items-center"
-                          aria-label="Go to next page"
-                        >
-                          Next <ChevronRight size={18} className="ml-1" />
-                        </button>
+                      <div className="container mx-auto px-4 mt-12 flex justify-center">
+                          <Pagination
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              onPageChange={handlePageChange}
+                          />
                       </div>
                     )}
                 </>
             )}
           </>
       )}
+
+      {/* --- STYLES FOR THE NEW PAGINATION --- */}
+      <style jsx global>{`
+        .pagination-arrow-btn {
+            @apply flex items-center justify-center h-10 w-10 rounded-full bg-white border border-slate-300 text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white;
+        }
+        .pagination-number-btn {
+            @apply flex items-center justify-center h-10 w-10 rounded-full bg-white border border-slate-300 text-slate-600 font-semibold transition-colors hover:bg-slate-100 disabled:bg-blue-600 disabled:text-white disabled:border-blue-600 disabled:cursor-default disabled:hover:bg-blue-600;
+        }
+        .pagination-active-btn {
+            @apply bg-blue-600 text-white border-blue-600 cursor-default;
+        }
+      `}</style>
     </div>
+  );
+};
+
+// The main export wrapper for Suspense
+const JudgementsPage = () => {
+  return (
+    <Suspense fallback={
+        <div className="flex justify-center items-center min-h-screen bg-slate-50 text-xl text-slate-600">
+            Loading Page...
+        </div>
+    }>
+      <JudgementsPageContent />
+    </Suspense>
   );
 };
 
