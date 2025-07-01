@@ -144,8 +144,8 @@ const NavBar = () => {
                       <h3 className="font-bold text-base mb-2 uppercase text-blue-800">IP Rights</h3>
                       <ul className="space-y-1 text-sm">
                         <li><Link href="/trademark" className="dropdown-higlight block p-1 rounded">Trademark Registration</Link></li>
-                        <li><Link href="/copyright" className="dropdown-higlight block p-1 rounded">Copyright Registration</Link></li>
-                        <li><Link href="/patent" className="dropdown-higlight block p-1 rounded">Patent Registration</Link></li>
+                        <li><Link href="/trademark" className="dropdown-higlight block p-1 rounded">Copyright Registration</Link></li>
+                        <li><Link href="/trademark" className="dropdown-higlight block p-1 rounded">Patent Registration</Link></li>
                       </ul>
                     </div>
                   </div>
@@ -261,6 +261,7 @@ const NavBar = () => {
                 }`}>
                   
                   <div className="ml-4 mt-1 space-y-1 text-sm">
+                    <Link href="/judgements" onClick={handleMobileLinkClick} className="block py-2 pl-2 font-semibold text-white hover:bg-blue-800 rounded-r border-l-2 border-emerald-400"> All Judgements</Link>
                     <Link href="/judgements?category=ARBITRATION_MATTER" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Arbitration matter</Link>
                     <Link href="/judgements?category=CONSUMER_DISPUTES" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Consumer Disputes</Link>
                     <Link href="/judgements?category=REAL_ESTATE_DISPUTES" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Real Estate Disputes</Link>
@@ -359,8 +360,8 @@ const NavBar = () => {
                       }`}>
                         <div className="ml-2 mt-1 space-y-1">
                           <Link href="/trademark" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Trademark Registration</Link>
-                          <Link href="/copyright" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Copyright Registration</Link>
-                          <Link href="/patent" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Patent Registration</Link>
+                          <Link href="/trademark" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Copyright Registration</Link>
+                          <Link href="/trademark" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Patent Registration</Link>
                         </div>
                       </div>
                     </div>

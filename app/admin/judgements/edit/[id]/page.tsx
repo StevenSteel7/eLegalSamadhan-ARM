@@ -3,36 +3,38 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { JudgementCategory } from '@prisma/client'; // --- ADDED ---
+import { useRouter, useParams } from 'next/navigation';
+import { Save, ArrowLeft, BookOpen, FileText, PencilLine, Loader2 } from 'lucide-react';
+import { JudgementCategory } from '@prisma/client';
 
-// --- ADDED --- Re-using the constant for the category options
+// Reusable constant for category options (from create page)
 const categoryOptions = Object.values(JudgementCategory).map(category => ({
   value: category,
   label: category.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
 }));
 
-// --- MODIFIED --- Interface to include category
+// Reusable constant for input field styling (from create page)
+const formInputStyle = "block w-full text-base bg-slate-50 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out px-4 py-3";
+
+// Interface for the fetched judgement data
 interface Judgement {
   id: number;
   title: string;
   caseNumber: string;
   court: string;
   date: string;
-  category: JudgementCategory; // Added category
+  category: JudgementCategory;
   summary: string | null;
   fullContent: string;
 }
 
-// --- MODIFIED --- Interface to include category
+// Interface for the form data
 interface JudgementFormData {
   title: string;
   caseNumber: string;
   court: string;
   date: string;
-  category: JudgementCategory; // Added category
+  category: JudgementCategory;
   summary: string;
   fullContent: string;
 }
@@ -47,11 +49,11 @@ const AdminEditJudgementPage = () => {
     caseNumber: '',
     court: '',
     date: '',
-    // --- MODIFIED --- Set a temporary default
-    category: '' as JudgementCategory,
+    category: JudgementCategory.OTHER_MATTER, // Default until data loads
     summary: '',
     fullContent: '',
   });
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -70,13 +72,12 @@ const AdminEditJudgementPage = () => {
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
         const data: Judgement = await response.json();
-        // --- MODIFIED --- Populate form with fetched data, including category
         setFormData({
             title: data.title,
             caseNumber: data.caseNumber,
             court: data.court,
             date: new Date(data.date).toISOString().split('T')[0], // Format date for input
-            category: data.category, // Set the category
+            category: data.category,
             summary: data.summary || '',
             fullContent: data.fullContent,
         });
@@ -90,7 +91,6 @@ const AdminEditJudgementPage = () => {
     fetchJudgement();
   }, [judgementId]);
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -101,7 +101,6 @@ const AdminEditJudgementPage = () => {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // --- MODIFIED --- Validation includes category
     if (!formData.title || !formData.caseNumber || !formData.court || !formData.date || !formData.fullContent || !formData.category) {
         setSubmitError('Please fill in all required fields.');
         setIsSubmitting(false);
@@ -119,71 +118,94 @@ const AdminEditJudgementPage = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      router.push('/admin/judgements');
+      // On success, redirect back to the main list
+      router.push('/admin/judgements?status=updated');
     } catch (e: any) {
       setSubmitError(`Error updating judgement: ${e.message}`);
+      window.scrollTo(0, 0);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex items-center mb-8">
-        <Link href="/admin/judgements" className="inline-flex items-center text-blue-900 hover:underline mr-4">
-            <ArrowLeft size={20} className="mr-1" /> Back
-        </Link>
-        <h1 className="text-3xl font-bold text-blue-900">Edit Judgement #{judgementId}</h1>
-      </div>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 flex items-center">
+              <PencilLine className="w-8 h-8 mr-3 text-blue-600" />
+              Edit Judgement
+            </h1>
+            <Link href="/admin/judgements" className="inline-flex items-center text-sm font-semibold text-blue-700 hover:text-blue-900">
+                <ArrowLeft size={16} className="mr-1" /> Back to List
+            </Link>
+        </div>
+        
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center bg-white p-10 rounded-xl shadow-lg">
+            <Loader2 className="w-8 h-8 mr-3 text-blue-600 animate-spin" />
+            <span className="text-xl text-gray-600">Loading Judgement Data...</span>
+          </div>
+        )}
 
-      {fetchError && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">{fetchError}</div>}
-      {isLoading && <div className="text-center p-10">Loading judgement data...</div>}
-      
-      {!isLoading && !fetchError && (
-        <>
-          {submitError && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">{submitError}</div>}
-          <div className="bg-white p-8 rounded-lg shadow-md border-t-4 border-blue-700">
+        {/* Error State */}
+        {fetchError && !isLoading && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 mb-6 rounded-md shadow-md">
+            <h3 className="font-bold">Failed to Load</h3>
+            <p>{fetchError}</p>
+          </div>
+        )}
+
+        {/* Form Display */}
+        {!isLoading && !fetchError && (
+          <div className="bg-white p-8 md:p-10 rounded-xl shadow-lg">
+              {submitError && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md">{submitError}</div>}
+              
               <form onSubmit={handleSubmit} noValidate>
-                {/* --- THIS PART IS IDENTICAL TO THE CREATE FORM --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div><label htmlFor="title" className="form-label">Title</label><input type="text" name="title" id="title" value={formData.title} onChange={handleChange} className="form-input" required /></div>
-                    <div><label htmlFor="caseNumber" className="form-label">Case Number</label><input type="text" name="caseNumber" id="caseNumber" value={formData.caseNumber} onChange={handleChange} className="form-input" required /></div>
-                    <div><label htmlFor="court" className="form-label">Court</label><input type="text" name="court" id="court" value={formData.court} onChange={handleChange} className="form-input" required /></div>
-                    <div><label htmlFor="date" className="form-label">Date</label><input type="date" name="date" id="date" value={formData.date} onChange={handleChange} className="form-input" required /></div>
+                {/* Section 1: Core Details */}
+                <div className="border-b border-gray-200 pb-8 mb-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                      <FileText className="w-5 h-5 mr-2 text-gray-400" />
+                      Case Information
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                        <div><label htmlFor="title" className="block text-base font-semibold text-gray-700 mb-2">Title</label><input type="text" name="title" id="title" value={formData.title} onChange={handleChange} placeholder="e.g., State vs. John Doe" className={formInputStyle} required /></div>
+                        <div><label htmlFor="caseNumber" className="block text-base font-semibold text-gray-700 mb-2">Case Number</label><input type="text" name="caseNumber" id="caseNumber" value={formData.caseNumber} onChange={handleChange} placeholder="e.g., C.A. No. 1234 of 2023" className={formInputStyle} required /></div>
+                        <div><label htmlFor="court" className="block text-base font-semibold text-gray-700 mb-2">Court</label><input type="text" name="court" id="court" value={formData.court} onChange={handleChange} placeholder="e.g., Supreme Court of India" className={formInputStyle} required /></div>
+                        <div><label htmlFor="date" className="block text-base font-semibold text-gray-700 mb-2">Date of Judgement</label><input type="date" name="date" id="date" value={formData.date} onChange={handleChange} className={formInputStyle} required /></div>
+                    </div>
                 </div>
-                <div className="mb-6">
-                  <label htmlFor="category" className="form-label">Category</label>
-                  <select name="category" id="category" value={formData.category} onChange={handleChange} className="form-input" required>
-                    {categoryOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+
+                {/* Section 2: Content & Categorization */}
+                <div className="space-y-8">
+                  <div><label htmlFor="category" className="block text-base font-semibold text-gray-700 mb-2">Category</label><select name="category" id="category" value={formData.category} onChange={handleChange} className={formInputStyle} required>{categoryOptions.map(option => (<option key={option.value} value={option.value}>{option.label}</option>))}</select></div>
+                  <div><label htmlFor="summary" className="block text-base font-semibold text-gray-700 mb-2">Summary (Optional)</label><textarea name="summary" id="summary" rows={5} value={formData.summary} onChange={handleChange} placeholder="A brief, one-paragraph summary of the judgement's outcome." className={formInputStyle}></textarea></div>
+                  <div><label htmlFor="fullContent" className="block text-base font-semibold text-gray-700 mb-2">Full Judgement Content</label><textarea name="fullContent" id="fullContent" rows={15} value={formData.fullContent} onChange={handleChange} placeholder="Paste the complete text of the judgement here." className={`${formInputStyle} font-mono text-sm`} required></textarea><p className="text-sm text-gray-500 mt-2">The full text of the legal document. Basic formatting will be applied on the public page.</p></div>
                 </div>
-                <div className="mb-6">
-                    <label htmlFor="summary" className="form-label">Summary (Optional)</label>
-                    <textarea name="summary" id="summary" rows={4} value={formData.summary} onChange={handleChange} className="form-input"></textarea>
-                </div>
-                <div className="mb-6">
-                    <label htmlFor="fullContent" className="form-label">Full Content</label>
-                    <textarea name="fullContent" id="fullContent" rows={12} value={formData.fullContent} onChange={handleChange} className="form-input" required></textarea>
-                </div>
-                <div className="flex justify-end gap-4">
-                    <Link href="/admin/judgements" className="btn-secondary">Cancel</Link>
-                    <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                        {isSubmitting && <svg className="animate-spin -ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>}
-                        <Save size={20} className={isSubmitting ? 'hidden' : 'inline-block mr-2'} />
-                        {isSubmitting ? 'Updating...' : 'Update Judgement'}
-                    </button>
+
+                {/* Form Actions */}
+                <div className="flex justify-end gap-4 mt-10 pt-6 border-t border-gray-200">
+                    <Link href="/admin/judgements" className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-100 transition-colors">Cancel</Link>
+                    <button type="submit" className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent shadow-sm text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                            Updating...
+                          </>
+                         ) : (
+                          <>
+                            <Save size={18} className="mr-2" />
+                            Update Judgement
+                          </>
+                         )}
+                     </button>
                 </div>
               </form>
           </div>
-        </>
-      )}
-      <style jsx>{`
-        .form-label { @apply block text-sm font-medium text-gray-700 mb-1; }
-        .form-input { @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500; }
-        .btn-primary { @apply inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed; }
-        .btn-secondary { @apply inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
-      `}</style>
+        )}
+      </div>
     </div>
   );
 };

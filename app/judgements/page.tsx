@@ -103,7 +103,7 @@ const JudgementsPageContent = () => {
   const pageTitle = formatCategoryTitle(category);
 
   return (
-    <div className="relative bg-slate-50 py-12 md:py-24 min-h-screen">
+    <div className="relative bg-slate-50 py-10 md:py-24 min-h-screen">
       {/* Section Header */}
       <div className="container mx-auto px-4 text-center mb-12 md:mb-16">
         <div className="flex justify-center items-center gap-4 mb-4">

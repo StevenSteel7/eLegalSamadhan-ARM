@@ -15,20 +15,20 @@ interface Judgement {
   date: Date;
   summary?: string | null;
   fullContent?: string | null;
-  category: JudgementCategory; // The category field is now included
+  category: JudgementCategory;
 }
 
-// --- Content processing types ---
-type ContentType = 'heading' | 'citation' | 'indented' | 'list-item' | 'reference' | 'paragraph';
-interface ContentItem {
-  id: string;
-  content: string;
-  type: ContentType;
-  parent?: string | null;
-}
+// --- NEW: Refined types for processed content ---
+// Using a discriminated union for type safety and clarity
+type ProcessedContent =
+  | { type: 'heading'; id: string; content: string }
+  | { type: 'paragraph'; id: string; content: string }
+  | { type: 'list'; id: string; items: string[] }
+  | { type: 'blockquote'; id: string; content: string }
+  | { type: 'reference'; id: string; content: string };
 
 
-// --- Main Server Component ---
+// --- Main Server Component (No changes needed here) ---
 export default async function JudgementDetailPage({ params }: { params: { id: string } }) {
   const judgementId = Number(params.id);
 
@@ -42,6 +42,7 @@ export default async function JudgementDetailPage({ params }: { params: { id: st
     notFound();
   }
 
+  // The new processing function will handle everything
   const formattedContent = processJudgementContent(judgement.fullContent);
 
   return (
@@ -61,7 +62,7 @@ export default async function JudgementDetailPage({ params }: { params: { id: st
             {judgement.title}
           </h1>
 
-          {/* Metadata Section with Category */}
+          {/* Metadata Section */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 bg-blue-50 p-5 rounded-lg">
             <MetadataItem icon={<FileText size={24} />} label="Case Number" value={judgement.caseNumber} />
             <MetadataItem icon={<Building2 size={24} />} label="Court" value={judgement.court} />
@@ -89,7 +90,7 @@ export default async function JudgementDetailPage({ params }: { params: { id: st
               <h2 className="text-xl font-bold text-gray-900 mb-4">Table of Contents</h2>
               <nav className="space-y-1">
                 {formattedContent
-                  .filter(item => item.type === 'heading')
+                  .filter((item): item is Extract<ProcessedContent, { type: 'heading' }> => item.type === 'heading')
                   .map((heading, index) => (
                     <a 
                       key={heading.id}
@@ -115,23 +116,16 @@ export default async function JudgementDetailPage({ params }: { params: { id: st
 }
 
 
-// --- DATABASE & DATA FETCHING ---
+// --- DATABASE & DATA FETCHING (No changes needed here) ---
 
 async function getJudgement(id: number): Promise<Judgement | null> {
   try {
-    const judgement = await prisma.judgement.findUnique({
-      where: { id },
-    });
-    // Return null if not found, let the main component handle it.
+    const judgement = await prisma.judgement.findUnique({ where: { id } });
     if (!judgement) return null;
-    
-    return {
-      ...judgement,
-      date: new Date(judgement.date), // Ensure date is a Date object
-    };
+    return { ...judgement, date: new Date(judgement.date) };
   } catch (error) {
     console.error(`Error fetching judgement with ID ${id}:`, error);
-    return null; // Return null on error to prevent crashes
+    return null;
   }
 }
 
@@ -151,53 +145,93 @@ function MetadataItem({ icon, label, value }: { icon: JSX.Element; label: string
 }
 
 function formatCategory(category: JudgementCategory): string {
-  return category
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+  return category.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
 
-function RenderContentItem({ item }: { item: ContentItem }) {
-  const htmlProps = { dangerouslySetInnerHTML: { __html: item.content } };
-  
+// --- NEW: Updated Renderer to handle lists properly ---
+function RenderContentItem({ item }: { item: ProcessedContent }) {
   switch (item.type) {
     case 'heading':
-      return <h2 id={item.id} className="text-xl font-bold text-blue-900 mt-8 mb-4 pb-2 border-b border-blue-200" {...htmlProps} />;
-    case 'citation':
-      return <blockquote className="border-l-4 border-blue-300 pl-4 py-1 my-4 italic text-gray-700" {...htmlProps} />;
-    case 'indented':
-      return <div className="pl-6 border-l-2 border-gray-200 my-4 text-gray-700" {...htmlProps} />;
-    case 'list-item':
-      return <div className="flex ml-4 my-2"><div className="mr-2 font-semibold text-blue-700">•</div><div {...htmlProps} /></div>;
+      return <h2 id={item.id} className="text-xl font-bold text-blue-900 mt-8 mb-4 pb-2 border-b border-blue-200" dangerouslySetInnerHTML={{ __html: item.content }} />;
+    
+    case 'blockquote':
+      return <blockquote className="border-l-4 border-blue-300 pl-4 py-1 my-4 italic text-gray-700" dangerouslySetInnerHTML={{ __html: item.content }} />;
+
+    case 'list':
+      return (
+        <ul className="list-disc pl-5 my-4 space-y-2">
+          {item.items.map((li, index) => (
+            <li key={index} className="text-gray-800" dangerouslySetInnerHTML={{ __html: li }} />
+          ))}
+        </ul>
+      );
+      
     case 'reference':
-      return <div className="bg-blue-50 p-3 my-4 rounded text-gray-800 border-l-4 border-blue-200" {...htmlProps} />;
+      return <div className="bg-blue-50 p-3 my-4 rounded text-gray-800 border-l-4 border-blue-200" dangerouslySetInnerHTML={{ __html: item.content }} />;
+      
+    case 'paragraph':
     default:
-      return <p className="leading-relaxed text-gray-800 my-4" {...htmlProps} />;
+      return <p className="leading-relaxed text-gray-800 my-4" dangerouslySetInnerHTML={{ __html: item.content }} />;
   }
 }
 
+// --- REUSED: This function is perfect for inline formatting ---
 function processTextFormatting(text: string): string {
+  // Bold: **text** or __text__
   text = text.replace(/\*\*(.*?)\*\*|__(.*?)__/g, '<strong>$1$2</strong>');
+  // Italic: *text* or _text_
   text = text.replace(/\*(.*?)\*|_(.*?)_/g, '<em>$1$2</em>');
+  // Strikethrough: ~~text~~
   text = text.replace(/~~(.*?)~~/g, '<del>$1</del>');
+  // Inline code: `code`
   text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+  // Links: [text](url)
   text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>');
   return text;
 }
 
-function processJudgementContent(content: string | null | undefined): ContentItem[] {
+// --- MAJOR REFACTOR: This is the new, more intelligent content parser ---
+function processJudgementContent(content: string | null | undefined): ProcessedContent[] {
   if (!content) return [];
-  const paragraphs = content.split(/\n\s*\n/);
-  return paragraphs.map((para, index) => {
-    const trimmedPara = para.trim();
-    let type: ContentType = 'paragraph';
-    if (/^[A-Z][A-Z\s\d.:;,()[\]{}'"&-]+$/.test(trimmedPara) && trimmedPara.length < 100) type = 'heading';
-    else if (trimmedPara.startsWith('•') || /^\d+\./.test(trimmedPara) || /^\([a-z]\)/.test(trimmedPara)) type = 'list-item';
-    else if (trimmedPara.startsWith('>')) type = 'citation';
-    return {
-      id: `content-${index}`,
-      content: processTextFormatting(trimmedPara.replace(/^>\s*/, '')),
-      type,
-    };
+  
+  // Split content into blocks separated by one or more blank lines.
+  const blocks = content.split(/\n\s*\n/);
+
+  return blocks.map((block, index) => {
+    const trimmedBlock = block.trim();
+    const id = `content-${index}`;
+    
+    // 1. Check for a heading (All caps, short length)
+    // This regex is good, we can keep it.
+    if (/^[A-Z][A-Z\s\d.:;,()[\]{}'"&-]+$/.test(trimmedBlock) && trimmedBlock.length < 150) {
+      return { id, type: 'heading', content: processTextFormatting(trimmedBlock) };
+    }
+    
+    // 2. Check if the block is a list
+    // A block is a list if its first line starts with a list marker.
+    const lines = trimmedBlock.split('\n');
+    const firstLine = lines[0].trim();
+    const isList = /^((\*|-|•)\s|[0-9]+\.\s|\([a-zA-Z0-9]+\)\s)/.test(firstLine);
+
+    if (isList) {
+      const listItems = lines.map(line => {
+        // Strip the marker (e.g., '1. ', '* ') from the start of the line for clean content
+        const cleanLine = line.trim().replace(/^((\*|-|•)\s|[0-9]+\.\s|\([a-zA-Z0-9]+\)\s)/, '');
+        // Apply inline formatting to each list item
+        return processTextFormatting(cleanLine);
+      });
+      return { id, type: 'list', items: listItems };
+    }
+
+    // 3. Check for blockquotes (lines starting with '>')
+    if (trimmedBlock.startsWith('>')) {
+      // Remove the '>' character from the beginning of each line
+      const blockquoteContent = lines.map(line => line.replace(/^>\s?/, '')).join('\n');
+      return { id, type: 'blockquote', content: processTextFormatting(blockquoteContent) };
+    }
+
+    // 4. Default to a paragraph
+    // Apply inline formatting to the whole paragraph block
+    return { id, type: 'paragraph', content: processTextFormatting(trimmedBlock) };
   });
 }
