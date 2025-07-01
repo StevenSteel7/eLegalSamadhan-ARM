@@ -1,0 +1,40 @@
+# .dockerignore
+
+# This file tells the 'docker build' command what to ignore.
+# It is separate from .gitignore.
+
+# Ignore Git history
+.git
+
+# Ignore Docker files themselves
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Ignore local environment files and secrets
+# These should be passed in at runtime, not built into the image.
+.env
+.env*.local
+
+# Ignore dependencies. These will be installed inside the container
+# during the 'npm ci' step in a clean way. Sending this folder
+# over is slow and unnecessary.
+node_modules
+
+# Ignore Next.js build cache and output directories.
+# The Dockerfile build process will create these inside the image.
+.next
+/out
+
+# --- THIS IS THE MOST IMPORTANT FIX FOR YOUR PROBLEM ---
+# Ignore the local Prisma data directory and any SQLite database files.
+# The database should ONLY exist in the persistent volume at runtime.
+prisma/data
+*.db
+*.db-journal
+
+# Ignore logs and misc files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
