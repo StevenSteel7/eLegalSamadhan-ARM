@@ -77,6 +77,7 @@ const NavBar = () => {
                         <li><Link href="/comsumer-Samadhan" className="dropdown-higlight block p-1 rounded hover:bg-gray-100">Consumer Samadhan</Link></li>
                         <li><Link href="/arbitration" className="dropdown-higlight block p-1 rounded hover:bg-gray-100">Arbitration Samadhan</Link></li>
                         <li><Link href="/rera" className="dropdown-higlight block p-1 rounded hover:bg-gray-100">RERA Samadhan</Link></li>
+                        <li><Link href="/cyber-Samadhan" className="dropdown-higlight block p-1 rounded hover:bg-gray-100">Cyber Samadhan</Link></li>
                       </ul>
                     </div>
                 </div>
@@ -238,6 +239,7 @@ const NavBar = () => {
                     <Link href="/comsumer-Samadhan" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Consumer Samadhan</Link>
                     <Link href="/arbitration" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Arbitration Samadhan</Link>
                     <Link href="/rera" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">RERA Samadhan</Link>
+                    <Link href="/cyber-Samadhan" onClick={handleMobileLinkClick} className="block py-1 pl-2 border-l-2 border-orange-500 hover:bg-blue-800 rounded-r">Cyber Samadhan</Link>
                   </div>
                 </div>
               </div>
